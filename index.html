@@ -1,35 +1,111 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-    <head>
-       <meta http-equiv="Content-Type"  content="text/html; charset=utf-8" />
-       <title>哈哈哈</title>
-       <script>
-           var timer = null;
-           timer= setInterval("zi()", 500);
-           i = 0;
-           function zi() {
-               var arr = new Array("杨", "凌", "是", "个", "大", "傻", "逼",  "。", "哈", "哈",  "哈",  "！");
-               var box =  document.getElementById("box");
-               box.innerHTML += arr[i]+' ';
-               i++;
-               if(i > arr.length-1) {
-               	//当你条件满足的时候,一定要记得关闭定时器
-                  clearInterval(timer);
-                  setInterval("shan()",  500);
-               }
-           }
-           function shan() {
-               var top =  document.getElementById("one");
-               if(top.style.display ==  "block") {
-                  top.style.display =  "none";  根据display的值来判断显示和隐藏
-               } else {
-                  top.style.display =  "block";
-               }
-           }
-       </script>
-    </head>
-    <body>
-       <div id="box"  style="float:left"></div>
-       <span id="one" style="float:left;  margin-left:5px;">丨</span>
-    </body>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+		<style type="text/css">
+			#showZone{
+				width: 50px;
+				height: 50px;
+				background-color: darkgoldenrod;
+				border-radius: 50%;
+				text-align: center;
+				line-height: 50px;
+				position: absolute;
+				font-size: 12px;
+			}
+			a{
+				position: absolute;
+				margin-top: 100px;
+				color: darkgreen;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="showZone"></div>
+		<a href="##">回放</a>
+	</body>
 </html>
+<script type="text/javascript">
+//	思路:
+//	用到的是一个鼠标拖拽方法
+//	判断左右,上下的临界点
+//	创建一个新数组,用来存储球拖动的轨迹
+//	回放,也就是从这个数字最后向前获取其轨迹的值,赋值给该球
+	
+	var obj = document.getElementById('showZone');
+	var oa = document.getElementsByTagName('a')[0];
+//	开关方法
+	var dragIf = false;
+	
+	var disX = disY = 0;
+//	声明一个数组,用来记录DIV移动的关键帧和回访的关键
+	var positions = [
+		{
+			x : obj.offsetLeft,
+			y : obj.offsetTop
+		}
+	]
+	
+	obj.onmousedown = function(event){
+		var ev = event || window.event;
+		disX = ev.clientX - obj.offsetLeft;
+		disY = ev.clientY - obj.offsetTop;
+		dragIf = true;
+	}
+	
+	document.onmousemove = function(event){
+		var ev = event || window.event;
+		if(!dragIf) return;
+		var currentX = ev.clientX - disX;
+		var currentY = ev.clientY - disY;
+		
+//		写正常的
+		var maxW = document.documentElement.clientWidth - obj.offsetWidth;
+		var maxH = document.documentElement.clientHeight - obj.offsetHeight;
+//		判定边界
+		currentX = currentX < 0 ? 0 : currentX;
+		currentX = currentX > maxW ? maxW : currentX;
+		currentY = currentY < 0 ? 0 : currentY;
+		currentY = currentY > maxH ? maxH : currentY;
+		
+//		初始化一下球:
+		obj.style.marginTop = obj.style.marginLeft = 0;
+		obj.style.left = currentX + 'px';
+		obj.style.top = currentY + 'px';
+		
+//		拖拽的过程需要不断的记录轨迹
+		positions.push({
+			x : currentX,
+			y : currentY
+		})
+//		显示鼠标松开的最后记录
+		obj.innerHTML = 'X:' + currentX + ' Y:' + currentY;
+		console.info(positions);
+		return false;
+	}
+	
+	document.onmouseup = function(){
+		dragIf = false;
+	}
+	
+//	点击回放按钮
+	oa.onclick = function(){
+//		如果你啥都不懂得情况下
+		if(positions.length == 1) return false;
+//		你不可能是自己点一次走一次,需要自己不断执行,需要定时器
+		var timer = setInterval(function(){
+//			获取到数组的最后一个
+			var oPos = positions.pop();
+//			我们只需要将里面对应的X Y的值赋值给盒子就好了
+			if(oPos){
+				obj.style.left = oPos.x + 'px';
+				obj.style.top = oPos.y + 'px';
+			}else{
+//				如果没有值了,说明数组删到头了,该停止定时器了
+				clearInterval(timer);
+			}
+		},50);
+		return false;
+	}
+</script>
